@@ -17,8 +17,8 @@ public abstract class Pet {
         return maxHealth;
     }
 
-    public void setHealth(int health) {
-        this.maxHealth = health;
+    public void increaseHealth(int health) {
+        this.maxHealth += health;
     }
 
     public int getSleepLevel() {
