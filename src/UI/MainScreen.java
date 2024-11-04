@@ -2,14 +2,13 @@ package UI;
 
 import javax.swing.*;
 
-public class MainScreen {
-    JFrame frame = new JFrame("Main Window");
-
+public class MainScreen extends JFrame{
     public MainScreen() {
-        this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.frame.setSize(500,400);
-        this.frame.setLocationRelativeTo(null);
-        this.frame.setVisible(true);
-    }
+        super("Main Window"); // Set title using super constructor
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(500, 400);
+        setLocationRelativeTo(null); // Center the window
 
+        setVisible(true); // Make the JFrame visible
+    }
 }
