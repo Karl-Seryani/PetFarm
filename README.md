@@ -1,5 +1,5 @@
 After cloning the repository on your machine run:
-git checkout yourusername (put your username)
+git checkout -b yourusername (put your username)
 
 This will create a branch where you can make changes.
 
