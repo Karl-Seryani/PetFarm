@@ -4,26 +4,26 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ParentalControlsScreen {
     private JFrame frame;
-    private JPanel mainPanel, controlPanel;
+    private JLabel backgroundLabel;
     private JPasswordField passwordField;
-    private JButton loginButton, setRestrictionsButton, resetStatsButton, revivePetButton, playGameButton;
+    private JLabel statusLabel;
+
+    private JPanel controlPanel;
     private JCheckBox enableRestrictionsCheckBox;
     private JTextField startTimeField, endTimeField;
-    private JLabel statusLabel, playtimeLabel, avgSessionLabel;
-    private int totalPlayTime = 0; // Placeholder for total playtime in hours
-    private int sessionCount = 1;  // Placeholder for the number of sessions
+    private JLabel playtimeLabel, avgSessionLabel;
+    private JButton setRestrictionsButton, resetStatsButton, revivePetButton, playGameButton;
 
-    // Reference to MainScreen
     private MainScreen mainScreen;
-
-    // Hardcoded password
-    private static final String HARDCODED_PASSWORD = "myPassword"; // Replace with your password
+    private int totalPlayTime = 0; // Placeholder for total playtime in hours
+    private int sessionCount = 1;  // Placeholder for session count
+    private static final String HARDCODED_PASSWORD = "myPassword";
 
     // List of pets
     private List<Pet> pets = new ArrayList<>();
@@ -33,54 +33,69 @@ public class ParentalControlsScreen {
 
         // Set up the frame
         frame = new JFrame("Parental Controls");
-        mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        frame.setSize(800, 600);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLayout(null);
 
-        // Password protection
-        JLabel passwordLabel = new JLabel("Enter Password:");
-        passwordField = new JPasswordField(20);
-        loginButton = new JButton("Login");
-        statusLabel = new JLabel("Please enter the password to continue.");
-        statusLabel.setForeground(Color.RED);
-
-        mainPanel.add(passwordLabel);
-        mainPanel.add(passwordField);
-        mainPanel.add(loginButton);
-        mainPanel.add(statusLabel);
-
-        // Action listener for the login button
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String password = new String(passwordField.getPassword());
-                if (password.equals(HARDCODED_PASSWORD)) { // Verify with hardcoded password
-                    showParentalControls();
-                } else {
-                    statusLabel.setText("Incorrect password. Try again.");
-                }
-            }
-        });
-
-        frame.add(mainPanel);
-        frame.setSize(450, 600);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Close the frame when closed
-        frame.setVisible(true);
-
-        // Hide the MainScreen while ParentalControlsScreen is active
-        mainScreen.setVisible(false);
-
-        // Add a window listener to show the MainScreen when this frame is closed
-        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+        frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                mainScreen.setVisible(true); // Make MainScreen visible again
+                mainScreen.setVisible(true);
             }
         });
+
+        // Set background image
+        ImageIcon backgroundIcon = new ImageIcon("Assets/GameImages/ParentalPassword.png");
+        backgroundLabel = new JLabel(new ImageIcon(backgroundIcon.getImage().getScaledInstance(800, 600, Image.SCALE_SMOOTH)));
+        backgroundLabel.setBounds(0, 0, 800, 600);
+
+        // Add password field
+        passwordField = new JPasswordField(15);
+        passwordField.setBounds(393, 330, 260, 35);
+        passwordField.setFont(new Font("Arial", Font.PLAIN, 18));
+        passwordField.setOpaque(false);
+        passwordField.setBorder(BorderFactory.createEmptyBorder());
+        frame.add(passwordField);
+
+        // Add invisible button for "Enter Password"
+        JButton invisibleLoginButton = new JButton();
+        invisibleLoginButton.setBounds(300, 434, 200, 70);
+        invisibleLoginButton.setContentAreaFilled(false);
+        invisibleLoginButton.setBorderPainted(false);
+        frame.add(invisibleLoginButton);
+
+        // Add sound effects
+        ButtonUtils.addButtonClickSound(invisibleLoginButton, "Assets/Sounds/click.wav");
+        ButtonUtils.addPasswordFieldEnterSound(passwordField, "Assets/Sounds/click.wav", this::handlePasswordSubmission);
+
+        // Add status label
+        statusLabel = new JLabel("");
+        statusLabel.setForeground(Color.RED);
+        statusLabel.setBounds(200, 420, 400, 30);
+        statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        frame.add(statusLabel);
+
+        // Add the background last
+        frame.add(backgroundLabel);
+
+        frame.setVisible(true);
+        mainScreen.setVisible(false);
+    }
+
+    private void handlePasswordSubmission() {
+        String password = new String(passwordField.getPassword());
+        if (password.equals(HARDCODED_PASSWORD)) {
+            showParentalControls();
+        } else {
+            statusLabel.setText("Incorrect password. Try again.");
+        }
     }
 
     private void showParentalControls() {
-        // Clear the main panel and set up the control panel
-        mainPanel.removeAll();
+        // Clear existing components
+        frame.getContentPane().removeAll();
+
+        // Create the control panel
         controlPanel = new JPanel();
         controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.Y_AXIS));
 
@@ -139,46 +154,18 @@ public class ParentalControlsScreen {
         controlPanel.add(revivePanel);
         controlPanel.add(playGamePanel);
 
-        // Action listeners for buttons
-        setRestrictionsButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                boolean isEnabled = enableRestrictionsCheckBox.isSelected();
-                String startTime = startTimeField.getText();
-                String endTime = endTimeField.getText();
-                // Implement logic to restrict playtime based on these values
-                JOptionPane.showMessageDialog(frame, "Playtime restrictions " + (isEnabled ? "enabled" : "disabled") +
-                        " from " + startTime + " to " + endTime + ".");
-            }
+        JButton backButton = new JButton("Back to Main Menu");
+        backButton.addActionListener(e -> {
+            frame.dispose();
+            mainScreen.setVisible(true);
         });
+        controlPanel.add(backButton);
 
-        resetStatsButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                totalPlayTime = 0;
-                sessionCount = 1;
-                playtimeLabel.setText("Total Playtime: 0 hours");
-                avgSessionLabel.setText("Average Session Time: 0 hours");
-                JOptionPane.showMessageDialog(frame, "Statistics have been reset.");
-            }
-        });
+        // Add control panel to the frame
+        controlPanel.setBounds(50, 50, 700, 500);
+        frame.add(controlPanel);
 
-        revivePetButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                reviveAllPets();
-            }
-        });
-
-        playGameButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Launch game as parent
-                launchGameAsParent();
-            }
-        });
-
-        mainPanel.add(controlPanel);
+        // Refresh the frame
         frame.revalidate();
         frame.repaint();
     }
@@ -200,15 +187,10 @@ public class ParentalControlsScreen {
     }
 
     private void launchGameAsParent() {
-        // Here you would invoke the game's main play interface.
-        // This is a placeholder implementation:
         JOptionPane.showMessageDialog(frame, "Game launched for parent!");
-        // You might replace this with an actual game interface instantiation, e.g.,
-        // new GameInterface(); // Assuming GameInterface is the main game class
     }
 
-    // Inner class to represent a Pet
-    class Pet {
+    static class Pet {
         String name;
         boolean isDead;
 

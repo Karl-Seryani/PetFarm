@@ -19,6 +19,8 @@ public class MainScreen extends JFrame {
         originalImage = mainMenuImage.getImage();
         imageLabel = new JLabel(new ImageIcon(originalImage));
 
+        MusicUtils.playBackgroundMusic("Assets/Sounds/MenuMusic.wav");
+
         // Set up the frame
         setTitle("Main Menu");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -69,24 +71,28 @@ public class MainScreen extends JFrame {
                 int x = e.getX();
                 int y = e.getY();
 
-                // Calculate the scale factors
+                // Calculate scale factors
                 double xScale = (double) imageLabel.getWidth() / originalWidth;
                 double yScale = (double) imageLabel.getHeight() / originalHeight;
 
-                // Adjust the clickable regions based on the scale factors
+                // Add sound effect path
+                String clickSoundPath = "Assets/Sounds/click.wav";
+
+                // Detect button clicks and play sound
                 if (isWithinBounds(x, y, (int) (357 * xScale), (int) (340 * yScale), (int) (110 * xScale), (int) (70 * yScale))) {
+                    ButtonUtils.playSound(clickSoundPath); // Play sound on "Game" button click
                     changeImage("Assets/GameImages/LoadGame.png", "Load Game Menu");
-                } else if (isWithinBounds(x, y, (int) (350 * xScale), (int) (415 * yScale), (int) (110 * xScale), (int) (70 * yScale))) {
-                    // No action defined for this button yet
+                } else if (isWithinBounds(x, y, (int) (350 * xScale), (int) (480 * yScale), (int) (110 * xScale), (int) (70 * yScale))) {
+                    ButtonUtils.playSound(clickSoundPath); // Play sound on "Parental Controls" button click
+                    new ParentalControlsScreen(MainScreen.this);
                 } else if (isWithinBounds(x, y, (int) (600 * xScale), (int) (250 * yScale), (int) (200 * xScale), (int) (100 * yScale))) {
-                    // "Go Back" button functionality
+                    ButtonUtils.playSound(clickSoundPath); // Play sound on "Go Back" button click
                     changeImage("Assets/GameImages/MainMenu.png", "Main Menu");
                 } else if (isWithinBounds(x, y, (int) (40 * xScale), (int) (250 * yScale), (int) (200 * xScale), (int) (100 * yScale))) {
-                    // "New Game" button functionality
+                    ButtonUtils.playSound(clickSoundPath); // Play sound on "New Game" button click
                     changeImage("Assets/GameImages/PetSelection.png", "Pet Selection");
                 }
             }
-
         });
 
         // Make the frame visible
