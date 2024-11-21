@@ -75,12 +75,18 @@ public class MainScreen extends JFrame {
 
                 // Adjust the clickable regions based on the scale factors
                 if (isWithinBounds(x, y, (int) (357 * xScale), (int) (340 * yScale), (int) (110 * xScale), (int) (70 * yScale))) {
-                    changeImage("Assets/GameImages/LoadGame.png", "Game Menu");
+                    changeImage("Assets/GameImages/LoadGame.png", "Load Game Menu");
                 } else if (isWithinBounds(x, y, (int) (350 * xScale), (int) (415 * yScale), (int) (110 * xScale), (int) (70 * yScale))) {
-                } else if (isWithinBounds(x, y, (int) (350 * xScale), (int) (500 * yScale), (int) (110 * xScale), (int) (70 * yScale))) {
-                    new ParentalControlsScreen(MainScreen.this);
+                    // No action defined for this button yet
+                } else if (isWithinBounds(x, y, (int) (600 * xScale), (int) (250 * yScale), (int) (200 * xScale), (int) (100 * yScale))) {
+                    // "Go Back" button functionality
+                    changeImage("Assets/GameImages/MainMenu.png", "Main Menu");
+                } else if (isWithinBounds(x, y, (int) (40 * xScale), (int) (250 * yScale), (int) (200 * xScale), (int) (100 * yScale))) {
+                    // "New Game" button functionality
+                    changeImage("Assets/GameImages/PetSelection.png", "Pet Selection");
                 }
             }
+
         });
 
         // Make the frame visible
