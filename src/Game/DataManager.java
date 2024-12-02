@@ -90,7 +90,8 @@ public class DataManager {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            DataManager.resetState("State.csv");
+            return getPetAttributes(petID);
         }
 
         return attributes;
@@ -103,7 +104,7 @@ public class DataManager {
      * @param attributes The pet's attributes to save.
      */
     public static void saveState(String slotName, Map<String, String> attributes) {
-        String filePath = DATA_DIRECTORY + slotName.toLowerCase() + ".csv";
+        String filePath = DATA_DIRECTORY + slotName.toLowerCase();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             writer.write(String.join(",", attributes.keySet()));
             writer.newLine();
@@ -121,8 +122,8 @@ public class DataManager {
      * @param petName The name of the pet whose save file should be loaded.
      * @return A map containing the pet's attributes, or an empty map if no save file is found.
      */
-    public static Map<String, String> loadState(String petName) {
-        String filePath = DATA_DIRECTORY + petName.toLowerCase() + ".csv";
+    public static Map<String, String> loadState(String petName, String file) {
+        String filePath = DATA_DIRECTORY + file;
         Map<String, String> attributes = new HashMap<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
@@ -132,7 +133,8 @@ public class DataManager {
                 attributes.put(headers[i], values[i]);
             }
         } catch (IOException e) {
-            System.out.println("No saved state found for " + petName + ". Starting a new game.");
+            DataManager.resetState(file);
+            return loadState(petName, file);
         }
 
         return attributes;
@@ -153,6 +155,60 @@ public class DataManager {
         }
 
         return saveFiles;
+    }
+
+    public static void resetState(String fileName) {
+        if (fileName.toLowerCase().equals("restrictions.csv")) {
+            var newData = new HashMap<String, String>();
+
+            newData.put("StartTime", "Not set");
+            newData.put("EndTime", "Not set");
+            newData.put("Total", "00:00");
+            newData.put("Average", "00:00");
+            newData.put("Times", "0");
+
+            DataManager.saveState(fileName, newData);
+        }
+        else {
+
+            var newData = new HashMap<String, String>();
+
+            newData.put("orange", "0");
+            newData.put("banana", "0");
+            newData.put("apple", "0");
+            newData.put("bbone", "0");
+            newData.put("strawberry", "0");
+            newData.put("ybone", "0");
+
+            switch(fileName) {
+                case ("slot1.csv"):
+                    newData.put("happiness", "100");
+                    newData.put("sleep", "50");
+                    newData.put("health", "50");
+                    newData.put("hunger", "50");
+                    break;
+                case ("slot2.csv"):
+                    newData.put("happiness", "50");
+                    newData.put("sleep", "100");
+                    newData.put("health", "50");
+                    newData.put("hunger", "50");
+                    break;
+                case ("slot3.csv"):
+                    newData.put("happiness", "50");
+                    newData.put("sleep", "50");
+                    newData.put("health", "100");
+                    newData.put("hunger", "50");
+                    break;
+                case ("slot4.csv"):
+                    newData.put("happiness", "50");
+                    newData.put("sleep", "50");
+                    newData.put("health", "50");
+                    newData.put("hunger", "100");
+                    break;
+            }
+
+            DataManager.saveState(fileName, newData);
+        }
     }
 
     /**

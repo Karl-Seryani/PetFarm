@@ -1,11 +1,14 @@
 package UI;
 
+import Game.DataManager;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ParentalControlsScreen {
     private JFrame frame;
@@ -23,12 +26,15 @@ public class ParentalControlsScreen {
     private int totalPlayTime = 0; // Placeholder for total playtime in hours
     private int sessionCount = 1;  // Placeholder for session count
     private static final String HARDCODED_PASSWORD = "myPassword";
+    private Map<String,String> data;
 
     // List of pets
     private List<Pet> pets = new ArrayList<>();
 
     public ParentalControlsScreen(MainScreen mainScreen) {
         this.mainScreen = mainScreen;
+
+        this.data = DataManager.loadState("", "Restrictions.csv");
 
         // Set up the frame
         frame = new JFrame("Parental Controls");
@@ -54,7 +60,7 @@ public class ParentalControlsScreen {
         passwordField.setFont(new Font("Arial", Font.PLAIN, 18));
         passwordField.setOpaque(false);
         passwordField.setBorder(BorderFactory.createEmptyBorder());
-        passwordField.setBounds(screenSize.width / 2 - 10, screenSize.height / 2 , 300, 110);
+        passwordField.setBounds(screenSize.width / 2 - 10, screenSize.height / 2 , 300, 168);
         frame.add(passwordField);
 
         // Add invisible button for "Enter Password"
@@ -84,6 +90,14 @@ public class ParentalControlsScreen {
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Set frame to fullscreen
         frame.setVisible(true);
         mainScreen.setVisible(false);
+
+        setRestrictionsButton = new JButton("Set Restrictions");
+        resetStatsButton = new JButton("Reset Statistics");
+
+        setRestrictionsButton.addActionListener(e -> setPlaytimeRestrictions());
+        resetStatsButton.addActionListener(e -> resetStatistics());
+        revivePetButton.addActionListener(e -> reviveAllPets());
+        playGameButton.addActionListener(e -> launchGameAsParent());
     }
 
     private void handlePasswordSubmission() {
@@ -114,12 +128,12 @@ public class ParentalControlsScreen {
         startTimeField = new JTextField();
         startTimeField.setToolTipText("Enter the start time (e.g., 09:00 for 9 AM).");
         startTimeField.setBorder(BorderFactory.createTitledBorder("Start Time (HH:MM)"));
+        startTimeField.setText(this.data.get("StartTime"));
 
         endTimeField = new JTextField();
         endTimeField.setToolTipText("Enter the end time (e.g., 18:00 for 6 PM).");
         endTimeField.setBorder(BorderFactory.createTitledBorder("End Time (HH:MM)"));
-
-        setRestrictionsButton = new JButton("Set Restrictions");
+        endTimeField.setText(this.data.get("EndTime"));
 
         restrictionsPanel.add(enableRestrictionsCheckBox);
         restrictionsPanel.add(new JLabel()); // Empty label for alignment
@@ -132,13 +146,13 @@ public class ParentalControlsScreen {
         statsPanel.setLayout(new GridLayout(3, 1, 10, 10));
         statsPanel.setBorder(new TitledBorder("Statistics"));
 
-        playtimeLabel = new JLabel("Total Playtime: " + totalPlayTime + " hours");
-        avgSessionLabel = new JLabel("Average Session Time: " + (totalPlayTime / sessionCount) + " hours");
-        resetStatsButton = new JButton("Reset Statistics");
+        playtimeLabel = new JLabel("Total Playtime: " + this.data.get("Total") + " hours");
+        avgSessionLabel = new JLabel("Average Session Time: " + this.data.get("Average") + " hours");
 
         statsPanel.add(playtimeLabel);
         statsPanel.add(avgSessionLabel);
         statsPanel.add(resetStatsButton);
+
 
         // Revive Pet Section
         JPanel revivePanel = new JPanel();
@@ -177,23 +191,58 @@ public class ParentalControlsScreen {
         frame.repaint();
     }
 
-    private void reviveAllPets() {
-        boolean anyRevived = false;
-        for (Pet pet : pets) {
-            if (pet.isDead) {
-                pet.isDead = false;
-                anyRevived = true;
-            }
-        }
-
-        if (anyRevived) {
-            JOptionPane.showMessageDialog(frame, "All dead pets have been revived!");
+    public void setPlaytimeRestrictions() {
+        System.out.println("pressed");
+        if (enableRestrictionsCheckBox.isSelected()) {
+            String startTime = startTimeField.getText();
+            String endTime = endTimeField.getText();
+            this.data.put("StartTime", startTime);
+            this.data.put("EndTime", endTime);
+            DataManager.saveState("restrictions.csv", this.data);
+            // Implement logic to set playtime restrictions
+            JOptionPane.showMessageDialog(frame, "Playtime restrictions set from " + startTime + " to " + endTime);
         } else {
-            JOptionPane.showMessageDialog(frame, "No pets needed reviving.");
+            this.data.put("StartTime", "00:00");
+            this.data.put("EndTime", "23:59");
+
+            DataManager.saveState("restrictions.csv", this.data);
+            JOptionPane.showMessageDialog(frame, "Playtime restrictions disabled.");
         }
     }
 
+    private void resetStatistics() {
+        // Implement logic to reset statistics
+        totalPlayTime = 0;
+        sessionCount = 0;
+        playtimeLabel.setText("Total Playtime: " + totalPlayTime + " hours");
+        avgSessionLabel.setText("Average Session Time: " + (totalPlayTime / sessionCount) + " hours");
+        JOptionPane.showMessageDialog(frame, "Statistics have been reset.");
+
+        this.data.put("Total", String.valueOf(totalPlayTime));
+        this.data.put("Average", String.valueOf(totalPlayTime / sessionCount));
+        this.data.put("Times", String.valueOf(sessionCount));
+
+        DataManager.saveState("restrictions.csv", this.data);
+    }
+
+    private void reviveAllPets() {
+        for(int i = 1; i <= 4; i ++) {
+            String fileName = "slot" + i + ".csv";
+            Map<String,String> map = DataManager.loadState("", fileName);
+
+            int health = Integer.parseInt(map.get("health"));
+            if (health == 0) {
+                map.put("health", "50");
+            }
+            DataManager.saveState(fileName, map);
+        }
+
+        JOptionPane.showMessageDialog(frame, "All dead pets have been revived!");
+    }
+
+
     private void launchGameAsParent() {
+        mainScreen.changeImage("Assets/GameImages/LoadGame.png", "Load Game Menu");
         JOptionPane.showMessageDialog(frame, "Game launched for parent!");
     }
 
